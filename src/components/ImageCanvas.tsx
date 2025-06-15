@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas } from 'fabric';
+import { Canvas as FabricCanvas, FabricImage } from 'fabric';
 import { X, Save } from 'lucide-react';
 
 interface ImageCanvasProps {
@@ -16,7 +16,6 @@ interface ImageCanvasProps {
 export const ImageCanvas: React.FC<ImageCanvasProps> = ({ image, onClose }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
   const [currentPath, setCurrentPath] = useState<Array<{x: number, y: number}>>([]);
 
   useEffect(() => {
@@ -29,12 +28,10 @@ export const ImageCanvas: React.FC<ImageCanvasProps> = ({ image, onClose }) => {
     });
 
     // Load the image as background
-    const imgElement = new Image();
-    imgElement.crossOrigin = 'anonymous';
-    imgElement.onload = () => {
+    FabricImage.fromURL(image.src).then((img) => {
       const canvasWidth = 800;
       const canvasHeight = 600;
-      const imgAspect = imgElement.width / imgElement.height;
+      const imgAspect = (img.width || 1) / (img.height || 1);
       const canvasAspect = canvasWidth / canvasHeight;
 
       let renderWidth, renderHeight;
@@ -46,16 +43,20 @@ export const ImageCanvas: React.FC<ImageCanvasProps> = ({ image, onClose }) => {
         renderWidth = canvasHeight * imgAspect;
       }
 
-      canvas.setBackgroundImage(image.src, canvas.renderAll.bind(canvas), {
-        scaleX: renderWidth / imgElement.width,
-        scaleY: renderHeight / imgElement.height,
+      img.set({
+        scaleX: renderWidth / (img.width || 1),
+        scaleY: renderHeight / (img.height || 1),
         originX: 'center',
         originY: 'center',
         left: canvasWidth / 2,
         top: canvasHeight / 2,
+        selectable: false,
+        evented: false
       });
-    };
-    imgElement.src = image.src;
+
+      canvas.backgroundImage = img;
+      canvas.renderAll();
+    });
 
     // Enable free drawing
     canvas.isDrawingMode = true;
@@ -65,20 +66,18 @@ export const ImageCanvas: React.FC<ImageCanvasProps> = ({ image, onClose }) => {
     setFabricCanvas(canvas);
 
     // Handle drawing events
-    let drawingPath: Array<{x: number, y: number}> = [];
-    
     canvas.on('path:created', (e) => {
-      const path = e.path;
-      if (path && path.path) {
-        // Extract coordinates from the path
-        const pathData = path.path;
+      const pathObject = e.path;
+      if (pathObject) {
+        // Extract coordinates from the path by accessing the points
         const coordinates: Array<{x: number, y: number}> = [];
         
-        for (let i = 0; i < pathData.length; i++) {
-          const segment = pathData[i];
-          if (segment[0] === 'M' || segment[0] === 'L') {
-            coordinates.push({ x: segment[1], y: segment[2] });
-          }
+        // For free drawing paths, we can get the path data
+        if (pathObject.left !== undefined && pathObject.top !== undefined) {
+          coordinates.push({ 
+            x: pathObject.left, 
+            y: pathObject.top 
+          });
         }
         
         setCurrentPath(coordinates);
@@ -120,12 +119,10 @@ export const ImageCanvas: React.FC<ImageCanvasProps> = ({ image, onClose }) => {
     if (fabricCanvas) {
       fabricCanvas.clear();
       // Reload background image
-      const imgElement = new Image();
-      imgElement.crossOrigin = 'anonymous';
-      imgElement.onload = () => {
+      FabricImage.fromURL(image.src).then((img) => {
         const canvasWidth = 800;
         const canvasHeight = 600;
-        const imgAspect = imgElement.width / imgElement.height;
+        const imgAspect = (img.width || 1) / (img.height || 1);
         const canvasAspect = canvasWidth / canvasHeight;
 
         let renderWidth, renderHeight;
@@ -137,16 +134,20 @@ export const ImageCanvas: React.FC<ImageCanvasProps> = ({ image, onClose }) => {
           renderWidth = canvasHeight * imgAspect;
         }
 
-        fabricCanvas.setBackgroundImage(image.src, fabricCanvas.renderAll.bind(fabricCanvas), {
-          scaleX: renderWidth / imgElement.width,
-          scaleY: renderHeight / imgElement.height,
+        img.set({
+          scaleX: renderWidth / (img.width || 1),
+          scaleY: renderHeight / (img.height || 1),
           originX: 'center',
           originY: 'center',
           left: canvasWidth / 2,
           top: canvasHeight / 2,
+          selectable: false,
+          evented: false
         });
-      };
-      imgElement.src = image.src;
+
+        fabricCanvas.backgroundImage = img;
+        fabricCanvas.renderAll();
+      });
       setCurrentPath([]);
     }
   };

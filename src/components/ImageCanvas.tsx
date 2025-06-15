@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, FabricImage } from 'fabric';
+import { Canvas as FabricCanvas, FabricImage, Path } from 'fabric';
 import { X, Save } from 'lucide-react';
 
 interface ImageCanvasProps {
@@ -185,7 +185,7 @@ export const ImageCanvas: React.FC<ImageCanvasProps> = ({ image, onClose }) => {
         </div>
         
         <div className="border border-gray-300 rounded">
-          <canvas ref={canvasRef} className="max-w-full" />
+          <canvas ref={canvasRef} className="max-w-full touch-none" />
         </div>
         
         <div className="mt-2 text-sm text-gray-600">

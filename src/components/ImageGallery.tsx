@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { ImageCanvas } from './ImageCanvas';
@@ -88,7 +89,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   const [editingImage, setEditingImage] = useState<typeof mockImages[0] | null>(null);
   
   const images = getImagesForFolder(folder);
-  const imagesPerPage = imagesPerRow * 4; // Show 4 rows per page
+  const imagesPerPage = 12; // Display a fixed number of images per page for consistent pagination
   const totalPages = Math.ceil(images.length / imagesPerPage);
   
   const startIndex = (currentPage - 1) * imagesPerPage;

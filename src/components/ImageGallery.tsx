@@ -1,6 +1,6 @@
-
-import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import { ImageCanvas } from './ImageCanvas';
 
 interface ImageGalleryProps {
   folder: string;
@@ -37,7 +37,7 @@ const mockImages = [
   },
   {
     id: 5,
-    src: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800",
+    src: "https://images.unsplash.com/photo-1486312338219-ce6a32c6f44d?w=800",
     alt: "Person using MacBook Pro",
     title: "MacBook Pro"
   },
@@ -85,6 +85,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   currentPage,
   onPageChange
 }) => {
+  const [editingImage, setEditingImage] = useState<typeof mockImages[0] | null>(null);
+  
   const images = getImagesForFolder(folder);
   const imagesPerPage = imagesPerRow * 4; // Show 4 rows per page
   const totalPages = Math.ceil(images.length / imagesPerPage);
@@ -133,12 +135,16 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 </h4>
               </div>
               
-              {/* Hover overlay */}
+              {/* Hover overlay with drawing button */}
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <div className="bg-white bg-opacity-90 px-3 py-1 rounded-full text-sm font-medium text-gray-800">
-                    View
-                  </div>
+                  <button
+                    onClick={() => setEditingImage(image)}
+                    className="flex items-center bg-white bg-opacity-90 px-3 py-2 rounded-full text-sm font-medium text-gray-800 hover:bg-opacity-100 transition-all"
+                  >
+                    <Edit size={16} className="mr-1" />
+                    Draw Mask
+                  </button>
                 </div>
               </div>
             </div>
@@ -177,6 +183,14 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             </button>
           </div>
         </div>
+      )}
+      
+      {/* Drawing Canvas Modal */}
+      {editingImage && (
+        <ImageCanvas
+          image={editingImage}
+          onClose={() => setEditingImage(null)}
+        />
       )}
     </div>
   );

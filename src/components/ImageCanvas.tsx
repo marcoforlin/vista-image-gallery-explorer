@@ -58,10 +58,14 @@ export const ImageCanvas: React.FC<ImageCanvasProps> = ({ image, onClose }) => {
       canvas.renderAll();
     });
 
-    // Enable free drawing
+    // Enable free drawing and initialize brush
     canvas.isDrawingMode = true;
-    canvas.freeDrawingBrush.color = '#ff0000';
-    canvas.freeDrawingBrush.width = 3;
+    
+    // Initialize the freeDrawingBrush properly in Fabric.js v6
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.color = '#ff0000';
+      canvas.freeDrawingBrush.width = 3;
+    }
 
     setFabricCanvas(canvas);
 
